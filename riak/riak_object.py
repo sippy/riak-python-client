@@ -98,6 +98,8 @@ class VClock(object):
         return '<{} {}>'.format(self.__class__.__name__,
                                 self.encode('base64'))
 
+    def __eq__(self, other):
+        return (self._vclock == other._vclock)
 
 class RiakObject(object):
     """
