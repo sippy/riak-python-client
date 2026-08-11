@@ -110,7 +110,7 @@ class lazy_property(object):
         if obj is None:
             return None
         value = self.fget(obj)
-        setattr(obj, self.func_name, value)
+        obj.__setattr__(self.func_name, value)
         return value
 
 

@@ -15,6 +15,7 @@
 from __future__ import print_function
 
 import threading
+import sys
 
 from contextlib import contextmanager
 
@@ -231,8 +232,15 @@ class Pool(object):
         Removes all resources from the pool, calling :meth:`delete_resource`
         with each one so that the resources are cleaned up.
         """
-        for resource in self:
-            self.delete_resource(resource)
+        try:
+            for resource in self:
+                self.delete_resource(resource)
+        except:
+            if sys.exc_info()[1].__str__().find('StopIteration') < 0:
+                raise
+            # Annoying issue happening during interpreter shutdown with
+            # apache wsgi module.
+            pass
 
     def create_resource(self):
         """
@@ -279,9 +287,9 @@ class PoolIterator(object):
 
     def next(self):
         # Python 2.x version
-        if len(self.targets) == 0:
+        if self.targets.__len__() == 0:
             raise StopIteration
-        if len(self.unlocked) == 0:
+        if self.unlocked.__len__() == 0:
             self.__claim_resources()
         return self.unlocked.pop(0)
 

@@ -16,6 +16,7 @@ import errno
 import logging
 import socket
 import struct
+import sys
 import six
 import riak.pb.riak_pb2
 import riak.pb.messages
@@ -273,11 +274,21 @@ class TcpConnection(object):
                 # shutdown() method due to the SSL lib
                 try:
                     self._socket.shutdown(socket.SHUT_RDWR)
-                except EnvironmentError:
+                except Exception as why:
                     # NB: sometimes these exceptions are raised if the initial
                     # connection didn't succeed correctly, or if shutdown() is
                     # called after the connection dies
-                    logging.debug('Exception occurred while shutting '
-                                  'down socket.', exc_info=True)
+                    if isinstance(why, OSError) and why.errno == errno.EBADF:
+                        pass
+                    try:
+                        logging.debug('Exception occurred while shutting '
+                                      'down socket.', exc_info=True)
+                    except:
+                        if sys.exc_info()[1].__str__().find('is not defined') < 0:
+                            raise
+                        # Annoying issue happening during interpreter shutdown with
+                        # apache wsgi module.
+                        pass
+
             self._socket.close()
             del self._socket
