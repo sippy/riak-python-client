@@ -81,10 +81,15 @@ def get_version():
         # Get the version using "git describe".
         cmd = 'git describe --tags --match [0-9]*'.split()
         try:
-            version = check_output(cmd).decode().strip()
+            version = check_output(cmd, cwd=d or '.',
+                                   stderr=PIPE).decode().strip()
         except CalledProcessError:
-            print('Unable to get version number from git tags')
-            exit(1)
+            # Forks and source snapshots may have Git metadata but no tags.
+            # Use a valid PEP 440 local version based on the revision instead.
+            cmd = 'git rev-parse --short HEAD'.split()
+            revision = check_output(cmd, cwd=d or '.',
+                                    stderr=PIPE).decode().strip()
+            version = '0+git.{0}'.format(revision)
 
         # PEP 386 compatibility
         if '-' in version:
