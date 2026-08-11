@@ -17,10 +17,22 @@ import unittest
 
 from riak.util import is_timeseries_supported, \
     datetime_from_unix_time_millis, \
+    parse_http_header, \
     unix_time_millis
 
 
 class UtilUnitTests(unittest.TestCase):
+    def test_parse_http_header_without_parameters(self):
+        self.assertEqual(('text/plain', {}),
+                         parse_http_header('text/plain'))
+
+    def test_parse_http_header_with_parameters(self):
+        value = 'multipart/mixed; boundary="semi;colon"; charset=UTF-8'
+        self.assertEqual(
+            ('multipart/mixed',
+             {'boundary': 'semi;colon', 'charset': 'UTF-8'}),
+            parse_http_header(value))
+
     # NB:
     # 144379690 secs, 987 msecs past epoch
     # 144379690987 total msecs past epoch

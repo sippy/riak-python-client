@@ -19,6 +19,7 @@ import sys
 import warnings
 
 from collections.abc import Mapping
+from email.message import Message
 from six import string_types, PY2
 
 epoch = datetime.datetime.utcfromtimestamp(0)
@@ -58,6 +59,16 @@ def is_timeseries_supported(v=None):
 def quacks_like_dict(object):
     """Check if object is dict-like"""
     return isinstance(object, Mapping)
+
+
+def parse_http_header(value):
+    """Parse a MIME-style HTTP header value and its parameters."""
+    message = Message()
+    message['content-type'] = value
+    params = message.get_params(header='content-type', unquote=True)
+    if not params:
+        return value, {}
+    return params[0][0], dict(params[1:])
 
 
 def deep_merge(a, b):

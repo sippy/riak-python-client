@@ -15,9 +15,8 @@
 import json
 import re
 
-from cgi import parse_header
 from email import message_from_string
-from riak.util import decode_index_value
+from riak.util import decode_index_value, parse_http_header
 from riak.client.index_page import CONTINUATION
 from riak import RiakError
 from six import PY2
@@ -110,7 +109,7 @@ class HttpMultipartStream(HttpStream):
     def __init__(self, response):
         super(HttpMultipartStream, self).__init__(response)
         ctypehdr = response.getheader('content-type')
-        _, params = parse_header(ctypehdr)
+        _, params = parse_http_header(ctypehdr)
         self.boundary_re = re.compile('\r?\n--%s(?:--)?\r?\n' %
                                       re.escape(params['boundary']))
         self.next_boundary = None

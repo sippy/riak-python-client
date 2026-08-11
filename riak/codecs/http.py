@@ -16,7 +16,6 @@ import re
 import csv
 import six
 
-from cgi import parse_header
 from email import message_from_string
 from email.utils import parsedate_tz, mktime_tz
 from xml.etree import ElementTree
@@ -25,7 +24,7 @@ from riak.content import RiakContent
 from riak.riak_object import VClock
 from riak.multidict import MultiDict
 from riak.transports.http.search import XMLSearchResult
-from riak.util import decode_index_value, bytes_to_str
+from riak.util import decode_index_value, bytes_to_str, parse_http_header
 
 if six.PY2:
     from urllib import unquote_plus
@@ -75,7 +74,7 @@ class HttpCodec(object):
             robj.key = headers['location'].strip().split('/')[-1]
         # If 300(Siblings), apply the siblings to the object
         elif status == 300:
-            ctype, params = parse_header(headers['content-type'])
+            ctype, params = parse_http_header(headers['content-type'])
             if ctype == 'multipart/mixed':
                 if six.PY3:
                     data = bytes_to_str(data)
@@ -269,7 +268,7 @@ class HttpCodec(object):
 
         :param value: Complete MIME content-type string
         """
-        content_type, params = parse_header(value)
+        content_type, params = parse_http_header(value)
         if 'charset' in params:
             charset = params['charset']
         else:
